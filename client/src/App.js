@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Switch, Route, Redirect } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom"; // Updated imports
 import NavBar from "./components/NavBar";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
@@ -9,7 +9,6 @@ function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Auto-login: Check if a session already exists
   useEffect(() => {
     fetch("/check_session").then((res) => {
       if (res.ok) {
@@ -23,32 +22,27 @@ function App() {
     });
   }, []);
 
-  // Show a simple loading screen while checking session
   if (loading) return <h1 style={{ textAlign: "center", marginTop: "50px" }}>Loading PawsStay...</h1>;
 
-  // If no user is logged in, show the Login page
   if (!user) {
     return <Login onLogin={setUser} />;
   }
 
-  // If user is logged in, show the full app
   return (
     <div className="App">
       <NavBar user={user} onLogout={() => setUser(null)} />
-      <Switch>
-        <Route exact path="/dashboard">
-          <Dashboard user={user} />
-        </Route>
+      {/* In v6, Switch is now Routes */}
+      <Routes>
+        <Route path="/dashboard" element={<Dashboard user={user} />} />
         
-        <Route exact path="/pets">
-          <MyPets />
-        </Route>
+        <Route path="/pets" element={<MyPets />} />
 
-        {/* Redirect home to dashboard if logged in */}
-        <Route exact path="/">
-          <Redirect to="/dashboard" />
-        </Route>
-      </Switch>
+        {/* In v6, Redirect is now Navigate */}
+        <Route path="/" element={<Navigate to="/dashboard" />} />
+        
+        {/* Catch-all: if route doesn't exist, go to dashboard */}
+        <Route path="*" element={<Navigate to="/dashboard" />} />
+      </Routes>
     </div>
   );
 }
