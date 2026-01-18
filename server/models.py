@@ -37,6 +37,8 @@ class Pet(db.Model, SerializerMixin):
     name = db.Column(db.String, nullable=False)
     species = db.Column(db.String)
     owner_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    image = db.Column(db.String)
+    bio = db.Column(db.String)
     
     sessions = db.relationship('StaySession', backref='pet', lazy=True)
     serialize_rules = ('-owner.pets', '-sessions.pet')
