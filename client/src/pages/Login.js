@@ -84,7 +84,7 @@ function Login({ onLogin }) {
         {error && <p style={styles.error}>{error}</p>}
 
         <p style={{ marginTop: "20px" }}>
-          {isLogin ? "New to PawsStay?" : "Already have an account?"}
+          {isLogin ? "New to Paws & Stay?" : "Already have an account?"}
           <button 
             onClick={() => {
                 setIsLogin(!isLogin);
