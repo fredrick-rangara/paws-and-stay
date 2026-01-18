@@ -48,7 +48,7 @@ def dashboard():
 @app.get("/pets")
 def get_pets():
     pets = Pet.query.all()
-    return jsonify([p.to_dict() for p in pets]), 200
+    return jsonify([p.to_dict(only=('id', 'name', 'species')) for p in pets]), 200
 
 @app.post("/pets")
 def create_pet():
