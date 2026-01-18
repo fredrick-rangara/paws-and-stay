@@ -4,16 +4,16 @@ import { NavLink, useNavigate } from "react-router-dom";
 function NavBar({ user, onLogout }) {
   const navigate = useNavigate();
 
-  function handleLogout() {
-    fetch("/logout", {
-      method: "DELETE",
-    }).then((res) => {
-      if (res.ok) {
-        onLogout(); // Clears user state in App.js
-        navigate("/"); // Redirects to login page
-      }
-    });
-  }
+ function handleLogout() {
+  fetch("http://localhost:5555/logout", {
+    method: "DELETE",
+    credentials: "include",
+  }).then((res) => {
+    if (res.ok) {
+      onLogout(); // This sets user to null in App.js
+    }
+  });
+}
 
   return (
     <nav style={styles.nav}>
