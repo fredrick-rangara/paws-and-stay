@@ -1,1 +1,254 @@
-Single-database configuration for Flask.
+Great! 😊
+Here is the same content **fully formatted as a clean README.md file**, exactly ready for copy and paste into GitHub.
+
+---
+
+````md
+# Paws & Stay
+
+## Project Description
+
+Paws & Stay is a full-stack web application designed to connect pet owners with trusted pet sitters.  
+The platform allows users to register pets, book sitting sessions, and manage pet care activities in an organized and user-friendly system.
+
+This project demonstrates the integration of a Flask backend API with a React frontend, implementing full CRUD functionality, user-pet relationships, and booking management.
+
+---
+
+## Project Team
+
+This project was collaboratively developed by the following team members:
+
+- Sharon Njoroge 
+- Sumeya Hirsi 
+- Fredrick Rangara  
+- Marvin Kioko 
+- Carl Kiprono  
+
+Each member contributed to a specific core feature of the application to ensure smooth collaboration and clean code structure.
+
+---
+
+## Technologies Used
+
+### Frontend
+- React.js  
+- JavaScript  
+- HTML  
+- CSS  
+- React Router  
+- Formik & Yup for form validation  
+- Fetch API  
+
+### Backend
+- Python  
+- Flask  
+- Flask-RESTful  
+- SQLAlchemy  
+- SQLite Database  
+- Flask-Migrate  
+
+### Tools
+- Git and GitHub  
+- Postman  
+- Visual Studio Code  
+
+---
+
+## Features
+
+Users of the system can:
+
+- Register pets  
+- View all available pets  
+- Book pet sitting sessions  
+- Edit pet details  
+- Delete pets  
+- View pets they own  
+- View pets they are sitting for  
+
+---
+
+## System Functionality
+
+### Member Responsibilities
+
+#### Member 1 – Architect & User Lead (Sharon Njoroge)
+- Repository setup  
+- Basic project folder structure  
+- Backend models and migrations  
+- Authentication simulation  
+- React routing and navigation  
+
+#### Member 2 – Pet Registrar (Sumeya Hirsi)
+- Pet creation functionality  
+- Building pet registration form  
+- Form validation  
+- Connecting frontend to backend  
+
+#### Member 3 – Booking Coordinator (Fredrick Rangara)
+- Booking (StaySession) functionality  
+- Creating booking routes  
+- Connecting pets to sitters  
+- Booking form with dropdown selections  
+
+#### Member 4 – Records Manager (Marvin Kioko)
+- Edit pet information  
+- Delete pet records  
+- Implement PATCH and DELETE routes  
+- Updating UI after changes  
+
+#### Member 5 – Dashboard & Data Lead (Carl Kiprono)
+- Seed data creation  
+- Dashboard development  
+- Styling and UI design  
+- Error handling and loading states  
+
+---
+
+## Installation and Setup
+
+Follow these steps to run the project locally:
+
+### 1. Clone the Repository
+
+```bash
+git clone git@github.com:fredrick-rangara/Paws_and_Stay.git
+````
+
+### 2. Backend Setup
+
+```bash
+cd server
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+flask db init
+flask db migrate
+flask db upgrade
+python seed.py
+python app.py
+```
+
+Backend runs on:
+
+[http://localhost:5555](http://localhost:5555)
+
+---
+
+### 3. Frontend Setup
+
+```bash
+cd client
+npm install
+npm start
+```
+
+Frontend runs on:
+
+[http://localhost:3000](http://localhost:3000)
+
+---
+
+## API Endpoints
+
+| Method | Endpoint       | Description              |
+| ------ | -------------- | ------------------------ |
+| GET    | /pets          | Get all pets             |
+| POST   | /pets          | Create a new pet         |
+| PATCH  | /pets/<id>     | Update pet details       |
+| DELETE | /pets/<id>     | Delete a pet             |
+| POST   | /stay_sessions | Create booking           |
+| GET    | /check_session | Simulated authentication |
+| GET    | /dashboard     | Custom dashboard data    |
+
+---
+
+## Git Workflow Strategy
+
+To contribute to the project:
+
+1. Always pull the latest changes:
+
+```bash
+git pull origin main
+```
+
+2. Create a feature branch:
+
+```bash
+git checkout -b feature/your-feature-name
+```
+
+3. Work on your assigned task
+
+4. Push changes:
+
+```bash
+git push origin feature/your-feature-name
+```
+
+5. Open a Pull Request for review
+
+---
+
+## Project Structure
+
+```
+Paws_and_Stay/
+│
+├── client/
+│   ├── src/
+│   ├── components/
+│   ├── App.js
+│   └── index.js
+│
+├── server/
+│   ├── app.py
+│   ├── models.py
+│   ├── seed.py
+│   └── migrations/
+│
+└── README.md
+```
+
+---
+
+## Future Improvements
+
+* Implement real authentication
+* Add pet image uploads
+* Email notifications for bookings
+* Admin dashboard
+* Payment integration
+
+---
+
+## Contributing
+
+Contributions are welcome.
+Feel free to open issues and pull requests to improve this project.
+
+---
+
+## License
+
+This project is licensed under the MIT License.
+
+MIT License
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files to deal in the Software
+without restriction.
+
+---
+
+### Acknowledgments
+
+Special thanks to the entire team for their dedication and collaboration in building this project.
+
+```
+
+
+
+
