@@ -1,8 +1,8 @@
-"""empty message
+"""initial migration
 
-Revision ID: c0feacb7fee1
+Revision ID: 381593a0ac65
 Revises: 
-Create Date: 2026-01-18 22:02:01.538314
+Create Date: 2026-01-18 23:18:25.210324
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'c0feacb7fee1'
+revision = '381593a0ac65'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -22,14 +22,15 @@ def upgrade():
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('username', sa.String(), nullable=False),
     sa.Column('email', sa.String(), nullable=False),
+    sa.Column('_password_hash', sa.String(), nullable=False),
     sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('email'),
     sa.UniqueConstraint('username')
     )
     op.create_table('pets',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(), nullable=False),
     sa.Column('species', sa.String(), nullable=True),
-    sa.Column('age', sa.Integer(), nullable=True),
     sa.Column('owner_id', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['owner_id'], ['users.id'], ),
     sa.PrimaryKeyConstraint('id')
@@ -38,7 +39,6 @@ def upgrade():
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('pet_id', sa.Integer(), nullable=True),
     sa.Column('sitter_id', sa.Integer(), nullable=True),
-    sa.Column('special_instructions', sa.String(), nullable=True),
     sa.Column('daily_rate', sa.Float(), nullable=True),
     sa.ForeignKeyConstraint(['pet_id'], ['pets.id'], ),
     sa.ForeignKeyConstraint(['sitter_id'], ['users.id'], ),
