@@ -1,102 +1,67 @@
 import React from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 function NavBar({ user, onLogout }) {
   const navigate = useNavigate();
 
- function handleLogout() {
-  fetch("http://localhost:5555/logout", {
-    method: "DELETE",
-    credentials: "include",
-  }).then((res) => {
-    if (res.ok) {
-      onLogout(); // This sets user to null in App.js
-    }
-  });
-}
+  function handleLogout() {
+    fetch("http://localhost:5555/logout", {
+      method: "DELETE",
+      credentials: "include",
+    }).then((res) => {
+      if (res.ok) {
+        onLogout(); // Clears user state in App.js
+        navigate("/"); // Redirects to home/login
+      }
+    });
+  }
 
   return (
-    <nav style={styles.nav}>
-      <div style={styles.logo}>
-        <NavLink to="/dashboard" style={styles.logoLink}>
-          🐾 Paws & Stay
-        </NavLink>
+    <nav style={navStyles.nav}>
+      <div style={navStyles.logo}>
+        <Link to="/" style={navStyles.logoLink}>
+          PawsStay 🐾
+        </Link>
       </div>
-
-      <div style={styles.links}>
-        <NavLink to="/dashboard" style={styles.link} activeStyle={styles.active}>
-          Dashboard
-        </NavLink>
-        <NavLink to="/pets" style={styles.link} activeStyle={styles.active}>
+      <div style={navStyles.links}>
+        <Link to="/dashboard" style={navStyles.link}>
+          Find Work
+        </Link>
+        <Link to="/pets" style={navStyles.link}>
           My Pets
-        </NavLink>
-        
-        {user && (
-          <div style={styles.userSection}>
-            <span style={styles.username}>Hello, {user.username}!</span>
-            <button onClick={handleLogout} style={styles.logoutBtn}>
-              Logout
-            </button>
-          </div>
-        )}
+        </Link>
+        <span style={navStyles.userGreet}>
+          Hi, {user ? user.username : "Guest"}!
+        </span>
+        <button onClick={handleLogout} style={navStyles.logoutBtn}>
+          Logout
+        </button>
       </div>
     </nav>
   );
 }
 
-const styles = {
+const navStyles = {
   nav: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    padding: "1rem 2rem",
-    backgroundColor: "#2d3436",
-    color: "white",
-    marginBottom: "20px",
+    padding: "15px 40px",
+    backgroundColor: "#fff",
+    boxShadow: "0 2px 10px rgba(0,0,0,0.05)",
   },
-  logo: {
-    fontSize: "1.5rem",
-    fontWeight: "bold",
-  },
-  logoLink: {
-    color: "#ff6b6b",
-    textDecoration: "none",
-  },
-  links: {
-    display: "flex",
-    alignItems: "center",
-    gap: "20px",
-  },
-  link: {
-    color: "white",
-    textDecoration: "none",
-    fontSize: "1rem",
-  },
-  active: {
-    textDecoration: "underline",
-    color: "#ff6b6b",
-  },
-  userSection: {
-    display: "flex",
-    alignItems: "center",
-    gap: "15px",
-    marginLeft: "20px",
-    borderLeft: "1px solid #636e72",
-    paddingLeft: "20px",
-  },
-  username: {
-    fontSize: "0.9rem",
-    fontStyle: "italic",
-    color: "#dfe6e9",
-  },
+  logo: { fontSize: "24px", fontWeight: "bold" },
+  logoLink: { textDecoration: "none", color: "#ff6b6b" },
+  links: { display: "flex", alignItems: "center", gap: "25px" },
+  link: { textDecoration: "none", color: "#555", fontWeight: "500" },
+  userGreet: { color: "#999", fontStyle: "italic" },
   logoutBtn: {
-    backgroundColor: "#ff6b6b",
-    color: "white",
+    backgroundColor: "#eee",
     border: "none",
-    padding: "5px 12px",
-    borderRadius: "4px",
+    padding: "8px 15px",
+    borderRadius: "8px",
+    color: "#333",
     cursor: "pointer",
-    fontSize: "0.9rem",
   },
 };
 
