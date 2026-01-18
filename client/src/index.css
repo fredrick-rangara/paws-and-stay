@@ -1,3 +1,36 @@
+/* CSS Variables for Colours */
+:root {
+  --primary: #FF6B6B;
+  --primary-hover: #ee5a5a;
+  --secondary: #4ECDC4;
+  --secondary-hover: #3dbdb5;
+  --accent: #FFE66D;
+  --accent-hover: #ffd93d;
+  --background: #F7F9FC;
+  --card-bg: #FFFFFF;
+  --text: #2D3436;
+  --text-light: #636e72;
+  --border: #e0e6ed;
+  --shadow: rgba(0, 0, 0, 0.1);
+  --success: #00b894;
+  --error: #d63031;
+}
+
+/* Spacing Variables */
+:root {
+  --space-xs: 0.5rem;
+  --space-sm: 1rem;
+  --space-md: 1.5rem;
+  --space-lg: 2rem;
+  --space-xl: 3rem;
+  --container-padding: 2rem;
+  --card-padding: 1.5rem;
+  --form-padding: 2rem;
+  --gap-sm: 1rem;
+  --gap-md: 1.5rem;
+  --gap-lg: 2rem;
+}
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
@@ -5,9 +38,59 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: var(--background);
+  color: var(--text);
+  line-height: 1.6;
 }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.App {
+  text-align: center;
+  min-height: 100vh;
+  padding: var(--container-padding);
+}
+
+/* Container for pages */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--container-padding);
+}
+
+/* Headings */
+h1, h2, h3, h4, h5, h6 {
+  margin: 0 0 var(--space-md) 0;
+  color: var(--text);
+}
+
+h1 {
+  font-size: 2.5rem;
+  color: var(--primary);
+}
+
+h2 {
+  font-size: 2rem;
+  color: var(--secondary);
+  margin-bottom: var(--space-lg);
+}
+
+h3 {
+  font-size: 1.5rem;
+  color: var(--text);
+}
+
+/* Links */
+a {
+  color: var(--secondary);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+a:hover {
+  color: var(--primary);
+}
+
