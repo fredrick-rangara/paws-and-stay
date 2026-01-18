@@ -2,49 +2,45 @@ from app import app
 from models import db, User, Pet, StaySession
 
 with app.app_context():
-    print("Clearing and Seeding database...")
-
-    # It's better to delete data rather than drop_all if you're using Flask-Migrate
+    print("🗑️ Clearing database...")
     StaySession.query.delete()
     Pet.query.delete()
     User.query.delete()
 
-    # Users (Changing 'name' to 'username' and adding 'email')
-    users = [
-        User(username="Alex", email="alex@paws.com"),
-        User(username="Brenda", email="brenda@paws.com"),
-        User(username="Chris", email="chris@paws.com"),
-        User(username="Diana", email="diana@paws.com"),
-        User(username="Evan", email="evan@paws.com")
-    ]
-    db.session.add_all(users)
+    print("👤 Creating users...")
+    # Create an Owner
+    fred = User(
+        username="Fred",
+        email="fred@gmail.com"
+    )
+    fred.password_hash = "password123" # This triggers the @password_hash.setter in models.py
+
+    # Create a Sitter
+    sara = User(
+        username="SaraSitter",
+        email="sara@gmail.com"
+    )
+    sara.password_hash = "password123"
+
+    db.session.add_all([fred, sara])
     db.session.commit()
 
-    # Pets
-    pets = [
-        Pet(name="Max", owner_id=users[0].id),
-        Pet(name="Bella", owner_id=users[0].id),
-        Pet(name="Rocky", owner_id=users[1].id),
-        Pet(name="Milo", owner_id=users[1].id),
-        Pet(name="Luna", owner_id=users[2].id),
-        Pet(name="Charlie", owner_id=users[2].id),
-        Pet(name="Coco", owner_id=users[3].id),
-        Pet(name="Buddy", owner_id=users[3].id),
-        Pet(name="Daisy", owner_id=users[4].id),
-        Pet(name="Leo", owner_id=users[4].id),
-    ]
-    db.session.add_all(pets)
+    print("🐾 Creating pets...")
+    buddy = Pet(name="Buddy", species="Golden Retriever", owner_id=fred.id)
+    mittens = Pet(name="Mittens", species="Tabby Cat", owner_id=fred.id)
+    
+    db.session.add_all([buddy, mittens])
     db.session.commit()
 
-    # Sessions (Many-to-Many connections)
-    sessions = [
-        StaySession(sitter_id=users[1].id, pet_id=1, daily_rate=20.0, special_instructions="Morning walks"),
-        StaySession(sitter_id=users[2].id, pet_id=2, daily_rate=25.0, special_instructions="Wet food only"),
-        StaySession(sitter_id=users[3].id, pet_id=3, daily_rate=30.0, special_instructions="Afraid of thunder"),
-        StaySession(sitter_id=users[4].id, pet_id=4, daily_rate=18.0, special_instructions="Loves fetch"),
-        StaySession(sitter_id=users[0].id, pet_id=5, daily_rate=22.0, special_instructions="Sleeping on couch ok"),
-    ]
-    db.session.add_all(sessions)
+    print("📅 Creating stay sessions...")
+    # Sara is sitting for Buddy
+    session1 = StaySession(
+        pet_id=buddy.id,
+        sitter_id=sara.id,
+        daily_rate=25.0
+    )
+
+    db.session.add(session1)
     db.session.commit()
 
-    print("Done seeding!")
+    print("✅ Database successfully seeded!")

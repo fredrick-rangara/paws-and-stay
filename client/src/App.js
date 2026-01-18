@@ -1,30 +1,44 @@
-import React from 'react';
-import { Routes, Route } from 'react-router-dom';
-
-// 1. Make sure these file names match your actual files in src/pages/
-import Home from './pages/Home';
-import BookingForm from './pages/BookingForm';
-import MyPets from './pages/MyPets';
-import Dashboard from './pages/Dashboard';
-
-// 2. Import your CSS
-import './App.css';
+import React, { useState, useEffect } from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
+import NavBar from "./components/NavBar";
+import Login from "./pages/Login";
+import Dashboard from "./pages/Dashboard"; // Make sure this import is correct!
+import MyPets from "./pages/MyPets";
 
 function App() {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("http://localhost:5555/check_session", { credentials: "include" })
+      .then((res) => {
+        if (res.ok) {
+          res.json().then((user) => setUser(user));
+        }
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return <h1 style={{ textAlign: "center", marginTop: "50px" }}>Loading PawsStay...</h1>;
+
+  // If no user is logged in, show the Login page
+  if (!user) {
+    return <Login onLogin={setUser} />;
+  }
+
   return (
     <div className="App">
-      <nav style={{ padding: "10px", background: "#eee" }}>
-        <a href="/">Home</a> | <a href="/book">Book</a> | <a href="/pets">My Pets</a> | <a href="/dashboard">Dashboard</a>
-      </nav>
-
+      <NavBar user={user} onLogout={() => setUser(null)} />
       <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/book" element={<BookingForm />} />
+        {/* These paths must match the "to" attributes in your NavBar Links */}
+        <Route path="/dashboard" element={<Dashboard user={user} />} />
         <Route path="/pets" element={<MyPets />} />
-        <Route path="/dashboard" element={<Dashboard />} /> 
         
-        {/* This catch-all helps if you go to a wrong URL */}
-        <Route path="*" element={<h1>404: Page Not Found</h1>} />
+        {/* This handles the base URL and redirects to dashboard */}
+        <Route path="/" element={<Navigate to="/dashboard" />} />
+        
+        {/* Catch-all for typos - redirects back to dashboard */}
+        <Route path="*" element={<Navigate to="/dashboard" />} />
       </Routes>
     </div>
   );
