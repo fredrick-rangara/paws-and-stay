@@ -1,31 +1,54 @@
-import React from 'react';
-import { Routes, Route } from 'react-router-dom';
-
-// 1. Make sure these file names match your actual files in src/pages/
-import Home from './pages/Home';
-import BookingForm from './pages/BookingForm';
-import MyPets from './pages/MyPets';
-import Dashboard from './pages/Dashboard';
-
-// 2. Import your CSS
-import './App.css';
+import React, { useState, useEffect } from "react";
+import { Switch, Route, Redirect } from "react-router-dom";
+import NavBar from "./components/NavBar";
+import Login from "./pages/Login";
+import Dashboard from "./pages/Dashboard";
+import MyPets from "./pages/MyPets";
 
 function App() {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  // Auto-login: Check if a session already exists
+  useEffect(() => {
+    fetch("/check_session").then((res) => {
+      if (res.ok) {
+        res.json().then((user) => {
+          setUser(user);
+          setLoading(false);
+        });
+      } else {
+        setLoading(false);
+      }
+    });
+  }, []);
+
+  // Show a simple loading screen while checking session
+  if (loading) return <h1 style={{ textAlign: "center", marginTop: "50px" }}>Loading PawsStay...</h1>;
+
+  // If no user is logged in, show the Login page
+  if (!user) {
+    return <Login onLogin={setUser} />;
+  }
+
+  // If user is logged in, show the full app
   return (
     <div className="App">
-      <nav style={{ padding: "10px", background: "#eee" }}>
-        <a href="/">Home</a> | <a href="/book">Book</a> | <a href="/pets">My Pets</a> | <a href="/dashboard">Dashboard</a>
-      </nav>
-
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/book" element={<BookingForm />} />
-        <Route path="/pets" element={<MyPets />} />
-        <Route path="/dashboard" element={<Dashboard />} /> 
+      <NavBar user={user} onLogout={() => setUser(null)} />
+      <Switch>
+        <Route exact path="/dashboard">
+          <Dashboard user={user} />
+        </Route>
         
-        {/* This catch-all helps if you go to a wrong URL */}
-        <Route path="*" element={<h1>404: Page Not Found</h1>} />
-      </Routes>
+        <Route exact path="/pets">
+          <MyPets />
+        </Route>
+
+        {/* Redirect home to dashboard if logged in */}
+        <Route exact path="/">
+          <Redirect to="/dashboard" />
+        </Route>
+      </Switch>
     </div>
   );
 }
