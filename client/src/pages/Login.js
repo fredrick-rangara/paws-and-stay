@@ -39,7 +39,7 @@ function Login({ onLogin }) {
   return (
     <div className="login-container" style={styles.container}>
       <div style={styles.card}>
-        <h1>{isLogin ? "🐾 PawsStay Login" : "🐾 Join PawsStay"}</h1>
+        <h1>{isLogin ? "🐾 Paws & Stay Login" : "🐾 Join Paws & Stay"}</h1>
         
         <form onSubmit={handleSubmit} style={styles.form}>
           <label>Username</label>
