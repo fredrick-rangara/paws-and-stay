@@ -3,6 +3,7 @@ import React, { useState } from "react";
 function Login({ onLogin }) {
   const [isLogin, setIsLogin] = useState(true);
   const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
   const [error, setError] = useState(null);
 
@@ -10,61 +11,145 @@ function Login({ onLogin }) {
     e.preventDefault();
     setError(null);
 
-    // Determine which endpoint to hit based on state
+    // Endpoint changes based on whether we are logging in or signing up
     const endpoint = isLogin ? "/login" : "/signup";
-    const body = isLogin ? { username } : { username, email };
+    
+    // Construct the data object to send
+    const formData = isLogin 
+      ? { username, password } 
+      : { username, email, password };
 
     fetch(endpoint, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    }).then((res) => {
-      if (res.ok) {
-        res.json().then((user) => onLogin(user));
-      } else {
-        res.json().then((err) => setError(err.error));
-      }
-    });
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(formData),
+    })
+      .then((res) => {
+        if (res.ok) {
+          res.json().then((user) => onLogin(user));
+        } else {
+          res.json().then((err) => setError(err.error || "Something went wrong"));
+        }
+      })
+      .catch(() => setError("Server is down. Check your Flask terminal!"));
   }
 
   return (
-    <div style={{ maxWidth: "400px", margin: "50px auto", textAlign: "center" }}>
-      <h1>{isLogin ? "Login" : "Sign Up"}</h1>
-      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-        <input
-          type="text"
-          placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          required
-        />
-        {!isLogin && (
+    <div className="login-container" style={styles.container}>
+      <div style={styles.card}>
+        <h1>{isLogin ? "🐾 PawsStay Login" : "🐾 Join PawsStay"}</h1>
+        
+        <form onSubmit={handleSubmit} style={styles.form}>
+          <label>Username</label>
           <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            type="text"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            placeholder="Enter username"
             required
+            style={styles.input}
           />
-        )}
-        <button type="submit" style={{ backgroundColor: "#ff6b6b", color: "white", padding: "10px", border: "none" }}>
-          {isLogin ? "Login" : "Register"}
-        </button>
-      </form>
 
-      {error && <p style={{ color: "red" }}>{error}</p>}
+          {!isLogin && (
+            <>
+              <label>Email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter email"
+                required
+                style={styles.input}
+              />
+            </>
+          )}
 
-      <p style={{ marginTop: "20px" }}>
-        {isLogin ? "Don't have an account?" : "Already have an account?"}
-        <button 
-          onClick={() => setIsLogin(!isLogin)} 
-          style={{ background: "none", border: "none", color: "blue", cursor: "pointer", textDecoration: "underline" }}
-        >
-          {isLogin ? "Sign Up" : "Login"}
-        </button>
-      </p>
+          <label>Password</label>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Enter password"
+            required
+            style={styles.input}
+          />
+
+          <button type="submit" style={styles.button}>
+            {isLogin ? "Login" : "Create Account"}
+          </button>
+        </form>
+
+        {error && <p style={styles.error}>{error}</p>}
+
+        <p style={{ marginTop: "20px" }}>
+          {isLogin ? "New to PawsStay?" : "Already have an account?"}
+          <button 
+            onClick={() => {
+                setIsLogin(!isLogin);
+                setError(null);
+            }} 
+            style={styles.toggleBtn}
+          >
+            {isLogin ? "Sign Up here" : "Login here"}
+          </button>
+        </p>
+      </div>
     </div>
   );
 }
+
+// Simple inline styles to make it look decent immediately
+const styles = {
+  container: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    height: "80vh",
+  },
+  card: {
+    padding: "40px",
+    border: "1px solid #ddd",
+    borderRadius: "8px",
+    boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
+    textAlign: "center",
+    width: "350px",
+  },
+  form: {
+    display: "flex",
+    flexDirection: "column",
+    textAlign: "left",
+    gap: "10px",
+  },
+  input: {
+    padding: "10px",
+    borderRadius: "4px",
+    border: "1px solid #ccc",
+  },
+  button: {
+    padding: "10px",
+    backgroundColor: "#ff6b6b",
+    color: "white",
+    border: "none",
+    borderRadius: "4px",
+    cursor: "pointer",
+    fontSize: "16px",
+    marginTop: "10px"
+  },
+  toggleBtn: {
+    background: "none",
+    border: "none",
+    color: "#007bff",
+    textDecoration: "underline",
+    cursor: "pointer",
+    marginLeft: "5px"
+  },
+  error: {
+    color: "red",
+    marginTop: "10px",
+    fontSize: "14px"
+  }
+};
 
 export default Login;
