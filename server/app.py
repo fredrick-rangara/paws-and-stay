@@ -13,18 +13,12 @@ bcrypt.init_app(app)
 migrate = Migrate(app, db)
 CORS(app, supports_credentials=True, origins=["http://localhost:3000"])
 
-@app.post("/signup")
-def signup():
-    data = request.get_json()
-    try:
-        user = User(username=data.get("username"), email=data.get("email"))
-        user.password_hash = data.get("password")
-        db.session.add(user)
-        db.session.commit()
-        session["user_id"] = user.id
-        return make_response(user.to_dict(), 201)
-    except Exception as e:
-        return make_response({"error": str(e)}, 422)
+@app.get("/check_session")
+def check_session():
+    user = User.query.get(session.get("user_id"))
+    if user:
+        return make_response(user.to_dict(), 200)
+    return make_response({"error": "No active session"}, 401)
 
 @app.post("/login")
 def login():
@@ -35,30 +29,40 @@ def login():
         return make_response(user.to_dict(), 200)
     return make_response({"error": "Invalid credentials"}, 401)
 
-@app.get("/check_session")
-def check_session():
-    user = User.query.get(session.get("user_id"))
-    if user:
-        return make_response(user.to_dict(), 200)
-    return make_response({"error": "No active session"}, 401)
-
 @app.delete("/logout")
 def logout():
     session.pop("user_id", None)
     return make_response({}, 204)
 
-@app.get("/pets")
-def get_pets():
-    user = User.query.get(session.get("user_id"))
-    return make_response(jsonify([p.to_dict() for p in user.pets]), 200)
+@app.get("/available_pets")
+def get_available_pets():
+    user_id = session.get("user_id")
+    # Exclude pets the user owns AND pets already booked
+    booked_pet_ids = [s.pet_id for s in StaySession.query.all()]
+    pets = Pet.query.filter(Pet.owner_id != user_id, ~Pet.id.in_(booked_pet_ids)).all()
+    return make_response(jsonify([p.to_dict() for p in pets]), 200)
 
-@app.post("/pets")
-def create_pet():
+@app.get("/my_bookings")
+def get_my_bookings():
+    user_id = session.get("user_id")
+    bookings = StaySession.query.filter_by(sitter_id=user_id).all()
+    return make_response(jsonify([b.to_dict() for b in bookings]), 200)
+
+@app.post("/book_stay")
+def book_stay():
+    user_id = session.get("user_id")
     data = request.get_json()
-    new_pet = Pet(name=data.get("name"), species=data.get("species"), owner_id=session.get("user_id"))
-    db.session.add(new_pet)
-    db.session.commit()
-    return make_response(new_pet.to_dict(), 201)
+    try:
+        new_session = StaySession(
+            pet_id=data.get("pet_id"),
+            sitter_id=user_id,
+            daily_rate=data.get("daily_rate", 25.0)
+        )
+        db.session.add(new_session)
+        db.session.commit()
+        return make_response(new_session.to_dict(), 201)
+    except Exception as e:
+        return make_response({"error": str(e)}, 422)
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
