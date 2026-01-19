@@ -8,15 +8,24 @@ app.secret_key = b'paws_stay_secret_key_123'
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///paws.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
+# --- RENDER COOKIE FIX ---
+app.config.update(
+    SESSION_COOKIE_SAMESITE='None',
+    SESSION_COOKIE_SECURE=True,
+)
+
 db.init_app(app)
 bcrypt.init_app(app)
 migrate = Migrate(app, db)
-CORS(app, supports_credentials=True, origins=["https://paws-and-stay-7t7a.onrender.com/"])
+
+# Update 'origins' with your actual FRONTEND URL from Render
+CORS(app, supports_credentials=True, origins=["https://paws-stay-frontend.onrender.com"])
 
 @app.get("/check_session")
 def check_session():
-    user = User.query.get(session.get("user_id"))
-    if user:
+    user_id = session.get("user_id")
+    if user_id:
+        user = User.query.get(user_id)
         return make_response(user.to_dict(), 200)
     return make_response({"error": "No active session"}, 401)
 
@@ -55,21 +64,6 @@ def book_stay():
     db.session.add(new_session)
     db.session.commit()
     return make_response(new_session.to_dict(), 201)
-
-@app.get("/pets")
-def get_pets():
-    user_id = session.get("user_id")
-    user_pets = Pet.query.filter_by(owner_id=user_id).all()
-    return make_response(jsonify([p.to_dict() for p in user_pets]), 200)
-
-@app.post("/pets")
-def create_pet():
-    user_id = session.get("user_id")
-    data = request.get_json()
-    new_pet = Pet(name=data['name'], species=data['species'], image=data.get('image'), bio=data.get('bio'), owner_id=user_id)
-    db.session.add(new_pet)
-    db.session.commit()
-    return make_response(new_pet.to_dict(), 201)
 
 @app.delete("/pets/<int:id>")
 def delete_pet(id):
