@@ -11,7 +11,7 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db.init_app(app)
 bcrypt.init_app(app)
 migrate = Migrate(app, db)
-CORS(app, supports_credentials=True, origins=["https://pawsstay-client.onrender.com"])
+CORS(app, supports_credentials=True, origins=["https://paws-and-stay-7t7a.onrender.com/"])
 
 @app.get("/check_session")
 def check_session():
