@@ -8,6 +8,8 @@ bcrypt = Bcrypt()
 
 class User(db.Model, SerializerMixin):
     __tablename__ = 'users'
+    
+    # Do not serialize the password hash for security
     serialize_rules = ('-_password_hash', '-pets.owner', '-stays_as_sitter.sitter')
 
     id = db.Column(db.Integer, primary_key=True)
@@ -15,6 +17,7 @@ class User(db.Model, SerializerMixin):
     email = db.Column(db.String, unique=True, nullable=False)
     _password_hash = db.Column(db.String, nullable=False)
 
+    # Relationships
     pets = db.relationship('Pet', backref='owner', lazy=True)
     stays_as_sitter = db.relationship('StaySession', backref='sitter', lazy=True)
 
@@ -40,10 +43,11 @@ class Pet(db.Model, SerializerMixin):
     bio = db.Column(db.String)
     owner_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
-    stays = db.relationship('StaySession', backref='pet', lazy=True, cascade="all, delete-orphan")
+    stays = db.relationship('StaySession', backref='pet', lazy=True)
 
 class StaySession(db.Model, SerializerMixin):
     __tablename__ = 'stay_sessions'
+    # This rule is key: it lets us see the pet name in the booking list
     serialize_rules = ('-sitter.stays_as_sitter', '-pet.stays')
 
     id = db.Column(db.Integer, primary_key=True)

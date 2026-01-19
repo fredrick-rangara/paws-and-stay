@@ -8,30 +8,39 @@ with app.app_context():
     User.query.delete()
 
     print("👤 Creating users...")
-    fred = User(username="Fred", email="fred@gmail.com")
-    fred.password_hash = "password123"
-    sara = User(username="SaraSitter", email="sara@gmail.com")
+    # Create an Owner
+    fred = User(
+        username="Fred",
+        email="fred@gmail.com"
+    )
+    fred.password_hash = "password123" # This triggers the @password_hash.setter in models.py
+
+    # Create a Sitter
+    sara = User(
+        username="SaraSitter",
+        email="sara@gmail.com"
+    )
     sara.password_hash = "password123"
+
     db.session.add_all([fred, sara])
     db.session.commit()
 
     print("🐾 Creating pets...")
-    buddy = Pet(
-        name="Buddy", species="Dog", 
-        image="https://images.unsplash.com/photo-1552053831-71594a27632d?w=800",
-        bio="A friendly Golden Retriever who loves long walks.", owner_id=fred.id
-    )
-    mittens = Pet(
-        name="Mittens", species="Cat", 
-        image="https://images.unsplash.com/photo-1533738363-b7f9aef128ce?w=800",
-        bio="A sophisticated calico who enjoys sunny spots.", owner_id=fred.id
-    )
-    tabby = Pet(
-        name="Tabby", species="Cat", 
-        image="https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=800",
-        bio="Energetic orange tabby. Playful and vocal!", owner_id=fred.id
-    )
+    buddy = Pet(name="Buddy", species="Golden Retriever", owner_id=fred.id)
+    mittens = Pet(name="Mittens", species="Tabby Cat", owner_id=fred.id)
     
-    db.session.add_all([buddy, mittens, tabby])
+    db.session.add_all([buddy, mittens])
     db.session.commit()
+
+    print("📅 Creating stay sessions...")
+    # Sara is sitting for Buddy
+    session1 = StaySession(
+        pet_id=buddy.id,
+        sitter_id=sara.id,
+        daily_rate=25.0
+    )
+
+    db.session.add(session1)
+    db.session.commit()
+
     print("✅ Database successfully seeded!")
