@@ -1,82 +1,71 @@
-from flask import Flask, request, jsonify, make_response, session
-from flask_migrate import Migrate
-from flask_cors import CORS
-from models import db, User, Pet, StaySession, bcrypt
+from flask import request, make_response
+from config import app, db, api
+from models import User, Pet, Sitter, Booking
+from flask_restful import Resource
 
-app = Flask(__name__)
-app.secret_key = b'paws_stay_secret_key_123' 
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///paws.db"
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+class Pets(Resource):
+    def get(self):
+        return make_response([p.to_dict() for p in Pet.query.all()], 200)
 
-# Ensure cookies work on localhost
-app.config.update(
-    SESSION_COOKIE_SAMESITE='Lax',
-    SESSION_COOKIE_SECURE=False,
-)
+    def post(self):
+        data = request.get_json()
+        try:
+            new_pet = Pet(
+                name=data['name'], 
+                species=data['species'], 
+                age=data['age'], 
+                user_id=1
+            )
+            db.session.add(new_pet)
+            db.session.commit()
+            return make_response(new_pet.to_dict(), 201)
+        except Exception as e:
+            db.session.rollback()
+            return make_response({"errors": [str(e)]}, 400)
 
-db.init_app(app)
-bcrypt.init_app(app)
-migrate = Migrate(app, db)
+class PetsById(Resource):
+    def patch(self, id):
+        pet = Pet.query.filter_by(id=id).first()
+        if not pet:
+            return make_response({"error": "Pet not found"}, 404)
+        data = request.get_json()
+        for attr in data:
+            setattr(pet, attr, data[attr])
+        db.session.commit()
+        return make_response(pet.to_dict(), 200)
 
-# FIX: Explicitly allow localhost:3000 with credentials for session support
-CORS(app, supports_credentials=True, origins=["http://localhost:3000"])
+    def delete(self, id):
+        pet = Pet.query.filter_by(id=id).first()
+        if not pet:
+            return make_response({"error": "Pet not found"}, 404)
+        db.session.delete(pet)
+        db.session.commit()
+        return make_response({}, 204)
 
-@app.get("/check_session")
-def check_session():
-    user_id = session.get("user_id")
-    if user_id:
-        user = User.query.get(user_id)
-        if user:
-            return make_response(user.to_dict(), 200)
-    return make_response({"error": "No active session"}, 401)
+class Sitters(Resource):
+    def get(self):
+        return make_response([s.to_dict() for s in Sitter.query.all()], 200)
 
-@app.post("/login")
-def login():
-    data = request.get_json()
-    user = User.query.filter_by(username=data.get("username")).first()
-    if user and user.authenticate(data.get("password")):
-        session["user_id"] = user.id
-        return make_response(user.to_dict(), 200)
-    return make_response({"error": "Invalid credentials"}, 401)
+class Bookings(Resource):
+    def post(self):
+        data = request.get_json()
+        try:
+            booking = Booking(
+                appointment_date=data['appointment_date'],
+                notes=data.get('notes', ''),
+                pet_id=data['pet_id'],
+                sitter_id=data['sitter_id']
+            )
+            db.session.add(booking)
+            db.session.commit()
+            return make_response(booking.to_dict(), 201)
+        except Exception as e:
+            return make_response({"errors": [str(e)]}, 400)
 
-@app.delete("/logout")
-def logout():
-    session.pop("user_id", None)
-    return make_response({}, 204)
-
-# FIX: Added the missing /pets route for MyPets.js
-@app.get("/pets")
-def get_my_pets():
-    user_id = session.get("user_id")
-    if not user_id:
-        return make_response({"error": "Unauthorized"}, 401)
-    
-    # Fetch only pets owned by the logged-in user
-    user_pets = Pet.query.filter_by(owner_id=user_id).all()
-    return make_response(jsonify([p.to_dict() for p in user_pets]), 200)
-
-@app.get("/available_pets")
-def get_available_pets():
-    user_id = session.get("user_id")
-    booked_pet_ids = [s.pet_id for s in StaySession.query.all()]
-    # Pets not owned by user and not currently booked
-    pets = Pet.query.filter(Pet.owner_id != user_id, ~Pet.id.in_(booked_pet_ids)).all()
-    return make_response(jsonify([p.to_dict() for p in pets]), 200)
-
-@app.get("/my_bookings")
-def get_my_bookings():
-    user_id = session.get("user_id")
-    bookings = StaySession.query.filter_by(sitter_id=user_id).all()
-    return make_response(jsonify([b.to_dict() for b in bookings]), 200)
-
-@app.post("/book_stay")
-def book_stay():
-    user_id = session.get("user_id")
-    data = request.get_json()
-    new_session = StaySession(pet_id=data.get("pet_id"), sitter_id=user_id)
-    db.session.add(new_session)
-    db.session.commit()
-    return make_response(new_session.to_dict(), 201)
+api.add_resource(Pets, '/pets')
+api.add_resource(PetsById, '/pets/<int:id>')
+api.add_resource(Sitters, '/sitters')
+api.add_resource(Bookings, '/bookings')
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
