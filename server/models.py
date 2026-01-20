@@ -1,52 +1,47 @@
-from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy_serializer import SerializerMixin
-from sqlalchemy.ext.hybrid import hybrid_property
-from flask_bcrypt import Bcrypt
-
-db = SQLAlchemy()
-bcrypt = Bcrypt()
+from sqlalchemy.ext.associationproxy import association_proxy
+from config import db 
 
 class User(db.Model, SerializerMixin):
     __tablename__ = 'users'
-    serialize_rules = ('-_password_hash', '-pets.owner', '-stays_as_sitter.sitter')
-
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String, unique=True, nullable=False)
-    email = db.Column(db.String, unique=True, nullable=False)
-    _password_hash = db.Column(db.String, nullable=False)
-
-    pets = db.relationship('Pet', backref='owner', lazy=True)
-    stays_as_sitter = db.relationship('StaySession', backref='sitter', lazy=True)
-
-    @hybrid_property
-    def password_hash(self):
-        return self._password_hash
-
-    @password_hash.setter
-    def password_hash(self, password):
-        self._password_hash = bcrypt.generate_password_hash(password).decode('utf-8')
-
-    def authenticate(self, password):
-        return bcrypt.check_password_hash(self._password_hash, password)
+    
+    pets = db.relationship('Pet', back_populates='user', cascade='all, delete-orphan')
+    serialize_rules = ('-pets.user',)
 
 class Pet(db.Model, SerializerMixin):
     __tablename__ = 'pets'
-    serialize_rules = ('-owner.pets', '-stays.pet')
-
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False)
-    species = db.Column(db.String)
-    image = db.Column(db.String)
-    bio = db.Column(db.String)
-    owner_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    species = db.Column(db.String, nullable=False)
+    age = db.Column(db.Integer)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
-    stays = db.relationship('StaySession', backref='pet', lazy=True, cascade="all, delete-orphan")
+    user = db.relationship('User', back_populates='pets')
+    bookings = db.relationship('Booking', back_populates='pet', cascade='all, delete-orphan')
+    sitters = association_proxy('bookings', 'sitter')
+    serialize_rules = ('-user.pets', '-bookings.pet',)
 
-class StaySession(db.Model, SerializerMixin):
-    __tablename__ = 'stay_sessions'
-    serialize_rules = ('-sitter.stays_as_sitter', '-pet.stays')
-
+class Sitter(db.Model, SerializerMixin):
+    __tablename__ = 'sitters'
     id = db.Column(db.Integer, primary_key=True)
-    pet_id = db.Column(db.Integer, db.ForeignKey('pets.id'))
-    sitter_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    daily_rate = db.Column(db.Float, default=25.0)
+    name = db.Column(db.String, nullable=False)
+    hourly_rate = db.Column(db.Float)
+    bio = db.Column(db.String)
+
+    bookings = db.relationship('Booking', back_populates='sitter', cascade='all, delete-orphan')
+    pets = association_proxy('bookings', 'pet')
+    serialize_rules = ('-bookings.sitter',)
+
+class Booking(db.Model, SerializerMixin):
+    __tablename__ = 'bookings'
+    id = db.Column(db.Integer, primary_key=True)
+    appointment_date = db.Column(db.String, nullable=False)
+    notes = db.Column(db.String)
+    pet_id = db.Column(db.Integer, db.ForeignKey('pets.id'), nullable=False)
+    sitter_id = db.Column(db.Integer, db.ForeignKey('sitters.id'), nullable=False)
+
+    pet = db.relationship('Pet', back_populates='bookings')
+    sitter = db.relationship('Sitter', back_populates='bookings')
+    serialize_rules = ('-pet.bookings', '-sitter.bookings',)

@@ -1,37 +1,24 @@
-from app import app
-from models import db, User, Pet, StaySession
+from config import app, db
+from models import User, Pet, Sitter, Booking
 
 with app.app_context():
-    print("🗑️ Clearing database...")
-    StaySession.query.delete()
+    print("Clearing database...")
+    Booking.query.delete()
     Pet.query.delete()
+    Sitter.query.delete()
     User.query.delete()
 
-    print("👤 Creating users...")
-    fred = User(username="Fred", email="fred@gmail.com")
-    fred.password_hash = "password123"
-    sara = User(username="SaraSitter", email="sara@gmail.com")
-    sara.password_hash = "password123"
-    db.session.add_all([fred, sara])
+    u1 = User(username="Freddy")
+    db.session.add(u1)
     db.session.commit()
 
-    print("🐾 Creating pets...")
-    buddy = Pet(
-        name="Buddy", species="Dog", 
-        image="https://images.unsplash.com/photo-1552053831-71594a27632d?w=800",
-        bio="A friendly Golden Retriever who loves long walks.", owner_id=fred.id
-    )
-    mittens = Pet(
-        name="Mittens", species="Cat", 
-        image="https://images.unsplash.com/photo-1533738363-b7f9aef128ce?w=800",
-        bio="A sophisticated calico who enjoys sunny spots.", owner_id=fred.id
-    )
-    tabby = Pet(
-        name="Tabby", species="Cat", 
-        image="https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=800",
-        bio="Energetic orange tabby. Playful and vocal!", owner_id=fred.id
-    )
-    
-    db.session.add_all([buddy, mittens, tabby])
+    s1 = Sitter(name="Alice Smith", hourly_rate=25.0, bio="Dog expert.")
+    s2 = Sitter(name="Bob Jones", hourly_rate=20.0, bio="Cat lover.")
+    db.session.add_all([s1, s2])
+
+    p1 = Pet(name="Buddy", species="Dog", age=3, user_id=u1.id)
+    p2 = Pet(name="Luna", species="Cat", age=2, user_id=u1.id)
+    db.session.add_all([p1, p2])
+
     db.session.commit()
-    print("✅ Database successfully seeded!")
+    print("Database seeded! 🐾")
