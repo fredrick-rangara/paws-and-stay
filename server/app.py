@@ -1,71 +1,63 @@
 from flask import request, make_response
+from flask_restful import Resource
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from config import app, db, api
 from models import User, Pet, Sitter, Booking
-from flask_restful import Resource
+
+class Signup(Resource):
+    def post(self):
+        data = request.get_json()
+        try:
+            user = User(username=data.get('username'))
+            user.password_hash = data.get('password')
+            db.session.add(user)
+            db.session.commit()
+            return {"message": "User created successfully"}, 201
+        except Exception as e:
+            db.session.rollback()
+            return {"errors": [str(e)]}, 400
+
+class Login(Resource):
+    def post(self):
+        data = request.get_json()
+        user = User.query.filter_by(username=data.get('username')).first()
+        if user and user.authenticate(data.get('password')):
+            token = create_access_token(identity=user.id)
+            return {"token": token, "user": user.to_dict()}, 200
+        return {"error": "Invalid credentials"}, 401
+
+class CheckSession(Resource):
+    @jwt_required()
+    def get(self):
+        user_id = get_jwt_identity()
+        user = User.query.filter_by(id=user_id).first()
+        return user.to_dict(), 200
 
 class Pets(Resource):
     def get(self):
-        return make_response([p.to_dict() for p in Pet.query.all()], 200)
+        return [p.to_dict() for p in Pet.query.all()], 200
 
+    @jwt_required()
     def post(self):
         data = request.get_json()
+        user_id = get_jwt_identity()
         try:
-            new_pet = Pet(
-                name=data['name'], 
-                species=data['species'], 
-                age=data['age'], 
-                user_id=1
-            )
+            new_pet = Pet(name=data['name'], species=data['species'], age=data['age'], user_id=user_id)
             db.session.add(new_pet)
             db.session.commit()
-            return make_response(new_pet.to_dict(), 201)
+            return new_pet.to_dict(), 201
         except Exception as e:
-            db.session.rollback()
-            return make_response({"errors": [str(e)]}, 400)
-
-class PetsById(Resource):
-    def patch(self, id):
-        pet = Pet.query.filter_by(id=id).first()
-        if not pet:
-            return make_response({"error": "Pet not found"}, 404)
-        data = request.get_json()
-        for attr in data:
-            setattr(pet, attr, data[attr])
-        db.session.commit()
-        return make_response(pet.to_dict(), 200)
-
-    def delete(self, id):
-        pet = Pet.query.filter_by(id=id).first()
-        if not pet:
-            return make_response({"error": "Pet not found"}, 404)
-        db.session.delete(pet)
-        db.session.commit()
-        return make_response({}, 204)
+            return {"errors": [str(e)]}, 400
 
 class Sitters(Resource):
     def get(self):
-        return make_response([s.to_dict() for s in Sitter.query.all()], 200)
+        return [s.to_dict() for s in Sitter.query.all()], 200
 
-class Bookings(Resource):
-    def post(self):
-        data = request.get_json()
-        try:
-            booking = Booking(
-                appointment_date=data['appointment_date'],
-                notes=data.get('notes', ''),
-                pet_id=data['pet_id'],
-                sitter_id=data['sitter_id']
-            )
-            db.session.add(booking)
-            db.session.commit()
-            return make_response(booking.to_dict(), 201)
-        except Exception as e:
-            return make_response({"errors": [str(e)]}, 400)
-
+api.add_resource(Signup, '/signup')
+api.add_resource(Login, '/login')
+api.add_resource(CheckSession, '/check_session')
 api.add_resource(Pets, '/pets')
-api.add_resource(PetsById, '/pets/<int:id>')
 api.add_resource(Sitters, '/sitters')
-api.add_resource(Bookings, '/bookings')
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
