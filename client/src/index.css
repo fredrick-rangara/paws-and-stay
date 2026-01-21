@@ -145,6 +145,14 @@ section label {
   padding-left: 10px;
 }
 
+.background-container {
+    background-image: url('../public/background.jpg');
+    background-size: cover;
+    background-position: center;
+    min-height: 100vh;
+    filter: brightness(0.7); /* Dims the background slightly */
+}
+
 button:hover {
   background-color: #219150;
 }
